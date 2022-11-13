@@ -92,8 +92,12 @@ Switch ($PSBoundParameters.Keys) {
 
         If (Test-Path -Path "$RegistryPath") {
 
-            Write-Verbose "[*] Enabling the registry value $DWORDName for $RegistryPath"
-            New-ItemProperty -Path "$RegistryPath" -Name $DWORDName -PropertyType "DWORD" -Value 1
+            Write-Verbose "[*] Checking for $Permission privileges to NcaSvc service"
+            $test = Get-ItemProperty -Path "$RegistryPath" -Name "RequiredPrivileges" | Where-Object -Property RequiredPrivileges -NotIn -Value $Permission
+            If ($test -ne $null) {
+                Write-Verbose "[*] Adding $Permission privileges to NcaSvc service"
+                Set-ItemProperty -Path "$RegistryPath" -Name "RequiredPrivileges" -Type MultiString -Value ($test.RequiredPrivileges + $Permission)
+            }
 
         }  # End If
         Else {
@@ -107,8 +111,8 @@ Switch ($PSBoundParameters.Keys) {
 
         If (Test-Path -Path "$RegistryPath") {
 
-            Write-Verbose "[*] Adding $Permission privileges to NcaSvc service"
-            New-ItemProperty -Path "$RegistryPath" -Name "RequiredPrivileges" -Value
+            Write-Verbose "[*] Enabling the registry value $DWORDName for $RegistryPath"
+            New-ItemProperty -Path "$RegistryPath" -Name $DWORDName -PropertyType "DWORD" -Value 1
 
         }  # End If
         Else {
